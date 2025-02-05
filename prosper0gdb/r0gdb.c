@@ -985,7 +985,21 @@ static void getpid_to_fncall(uint64_t* regs)
         regs[2] &= -257;
     }
 }
-void notify(const char* s);
+
+void notify(const char* s)
+{
+    struct
+    {
+        char pad1[0x10];
+        int f1;
+        char pad2[0x19];
+        char msg[0xc03];
+    } notification = {.f1 = -1};
+    char* d = notification.msg;
+    while(*d++ = *s++);
+    ((void(*)())dlsym((void*)0x1, "sceKernelSendNotificationRequest"))(0, &notification, 0xc30, 0);
+}
+
 uint64_t r0gdb_kfncall(uint64_t fn, ...)
 {
     va_list args;
