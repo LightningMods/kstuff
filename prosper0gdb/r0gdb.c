@@ -28,7 +28,7 @@
 #define WRAPPER(name) WRAPPER2(name, name)
 
 #else
-
+void* dlsym(void*, const char*);
 static inline int gettid(void)
 {
     long tid;
@@ -167,7 +167,6 @@ ssize_t copyin(uint64_t dst, const void* src, size_t count)
     return write(the_pipe[1], src, count);
 }
 
-void* dlsym(void*, const char*);
 
 static uint64_t get_thread(void)
 {
