@@ -976,8 +976,13 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
     notify("allocating kernel mem");
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"allocating kernel memory... ", (uintptr_t)28);
       notify("after remote sys");
-    for(int i = 0; i < 0x300; i += 2)
+  char buff[50];
+    for(int i = 0; i < 0x300; i += 2){
+        memset(buff, 0, sizeof(buff));
+        sprint(buff, "allocating for %d", i); 
+        notify(buff);
         r0gdb_kmalloc(0x100);
+    }
 
       notify("after kmalloc");
     for(int i = 0; i < 2; i += 2)
