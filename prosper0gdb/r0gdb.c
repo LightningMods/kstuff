@@ -209,21 +209,30 @@ static int bind_to_some_cpu(int skip)
 {
     uint8_t affinity[16] = {0};
     cpuset_getaffinity(3, 1, gettid(), 16, (void*)affinity);
+    notify_alt("step 1 done");
     int i = 0;
     while(i < 16 && !affinity[i])
         i++;
+
+    notify_alt("step 2 done");
     for(int j = 0; j < skip; j++)
     {
         affinity[i] &= ~(affinity[i] ^ (affinity[i] - 1));
         while(i < 16 && !affinity[i])
             i++;
     }
+
+        notify_alt("step 3 done");
     if(i == 16)
         return -1;
     affinity[i] &= (affinity[i] ^ (affinity[i] - 1));
     i++;
+
+        notify_alt("step 4 done");
     while(i < 16)
         affinity[i++] = 0;
+
+        notify_alt("step 5 done");
     return cpuset_setaffinity(3, 1, gettid(), 16, (void*)affinity);
 }
 
