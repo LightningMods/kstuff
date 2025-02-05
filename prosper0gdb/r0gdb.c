@@ -48,6 +48,21 @@ static int victim_fd;
 static uintptr_t victim_pktopts;
 uintptr_t kdata_base;
 
+void notify_alt(const char* s)
+{
+    struct
+    {
+        char pad1[0x10];
+        int f1;
+        char pad2[0x19];
+        char msg[0xc03];
+    } notification = {.f1 = -1};
+    char* d = notification.msg;
+    while(*d++ = *s++);
+    ((void(*)())dlsym((void*)0x1, "sceKernelSendNotificationRequest"))(0, &notification, 0xc30, 0);
+}
+
+
 static void* malloc(size_t size)
 {
     return mmap(0, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
@@ -513,13 +528,20 @@ void r0gdb_trace(size_t trace_size)
     static int tracing;
     if(!tracing)
     {
+        notify_alt("setting up");
         r0gdb_setup(0);
+        notify_alt("done");
         bind_to_some_cpu(0);
+        notify_alt("bound to cpu");
         r0gdb_wrmsr(0xc0000084, r0gdb_rdmsr(0xc0000084) & -0x101);
+        notify_alt("mmaping");
         char* stack = mmap(0, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+        notify_alt("done");
         mlock(stack, 16384);
+                notify_alt("locked");
         stack[0] = 1;
         mlock(stack, 16384);
+                notify_alt("unlocked");
         /*uint64_t urf[5] = {(uintptr_t)ret2trace, 0x43, 2, (uintptr_t)stack+16384, 0x3b};
         copyin(uretframe, urf, sizeof(urf));*/
         uretframe_for_trace[0] = (uintptr_t)ret2trace;
@@ -986,20 +1008,6 @@ static void getpid_to_fncall(uint64_t* regs)
     }
 }
 
-void notify_alt(const char* s)
-{
-    struct
-    {
-        char pad1[0x10];
-        int f1;
-        char pad2[0x19];
-        char msg[0xc03];
-    } notification = {.f1 = -1};
-    char* d = notification.msg;
-    while(*d++ = *s++);
-    ((void(*)())dlsym((void*)0x1, "sceKernelSendNotificationRequest"))(0, &notification, 0xc30, 0);
-}
-
 uint64_t r0gdb_kfncall(uint64_t fn, ...)
 {
     va_list args;
@@ -1008,26 +1016,15 @@ uint64_t r0gdb_kfncall(uint64_t fn, ...)
         fncall_args[i] = va_arg(args, uint64_t);
     va_end(args);
     fncall_fn = fn;
-    notify_alt("b4 r0gdb_instrument");
     r0gdb_instrument(0);
-    notify_alt("after r0gdb_instrument");
 
     void(*p_getpid)(void) = WRAPPER(getpid);
-
-    notify_alt("after getpid1");
-
     trace_prog = getpid_to_fncall;
     if(!sys_getpid)
         kmemcpy(&sys_getpid, (void*)(offsets.sysents + 48*SYS_getpid + 8), 8);
 
-    notify_alt("step 4");
-
     set_trace();
-    
-    notify_alt("step 5");
     p_getpid();
-    
-    notify_alt("step 6");
     return fncall_ans;
 }
 
