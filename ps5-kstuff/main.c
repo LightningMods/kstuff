@@ -22,6 +22,57 @@ bool if_exists(const char *path) {
   return stat(path, &buffer) == 0;
 }
 
+void int_to_string(int num, char *buffer) {
+    int i = 0;
+    int is_negative = 0;
+
+    // Handle negative numbers
+    if (num < 0) {
+        is_negative = 1;
+        num = -num;
+    }
+
+    // Convert integer to string
+    do {
+        buffer[i++] = (num % 10) + '0'; // Get last digit and convert to char
+        num /= 10;                       // Remove last digit
+    } while (num > 0);
+
+    // Add negative sign if needed
+    if (is_negative) {
+        buffer[i++] = '-';
+    }
+
+    // Null-terminate the string
+    buffer[i] = '\0';
+
+    // Reverse the string
+    for (int j = 0; j < i / 2; j++) {
+        char temp = buffer[j];
+        buffer[j] = buffer[i - j - 1];
+        buffer[i - j - 1] = temp;
+    }
+}
+
+void custom_sprintf(char *buff, const char *format, int value) {
+    // Simple implementation for the specific case
+    if (format[0] == 'a' && format[1] == 'l' && format[2] == 'l' &&
+        format[3] == 'o' && format[4] == 'c' && format[5] == 'a' &&
+        format[6] == 't' && format[7] == 'i' && format[8] == 'n' &&
+        format[9] == 'g' && format[10] == ' ' && format[11] == 'f' &&
+        format[12] == 'o' && format[13] == 'r' && format[14] == ' ') {
+        
+        // Copy the static part of the format
+        for (int i = 0; i < 15; i++) {
+            buff[i] = format[i];
+        }
+
+        // Convert the integer to string and append it
+        int_to_string(value, buff + 15);
+    }
+}
+
+
 bool sceKernelIsTestKit() {
   return if_exists("/system/priv/lib/libSceDeci5Ttyp.sprx");
 }
@@ -979,7 +1030,7 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
       notify("after remote sys");
   char buff[50];
     for(int i = 0; i < 0x300; i += 2){
-        sprintf(buff, "allocating for %d", i); 
+        custom_sprintf(buff, "allocating for %d", i); 
         notify(buff);
         r0gdb_kmalloc(0x100);
     }
