@@ -977,7 +977,7 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
         return 1;
 #endif
     }
-         notify("first step");
+
 #ifdef PS5KEK
     extern uint64_t p_syscall;
     getpid();
@@ -1012,7 +1012,7 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
 #ifdef FIRMWARE_PORTING
     dbg_enter();
 #endif
-         notify("2nd step");
+
     uint64_t percpu_ist4[NCPUS];
     for(int cpu = 0; cpu < NCPUS; cpu++)
         copyout(&percpu_ist4[cpu], TSS(cpu)+28+4*8, 8);
@@ -1025,26 +1025,22 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
 #ifndef FIRMWARE_PORTING
     dbg_enter();
 #endif
-    notify("allocating kernel mem");
+
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"allocating kernel memory... ", (uintptr_t)28);
-      notify("after remote sys");
-  char buff[50];
+
     for(int i = 0; i < 0x300; i += 2){
-        custom_sprintf(buff, "allocating for %d", i); 
-        notify(buff);
         r0gdb_kmalloc(0x100);
     }
 
-      notify("after kmalloc");
+
     for(int i = 0; i < 2; i += 2)
     {
         while(!mem_blocks[i])
             mem_blocks[i] = r0gdb_kmalloc(1<<23);
         mem_blocks[i+1] = (mem_blocks[i] ? mem_blocks[i] + (1<<23) : 0);
     }
-      notify("before 3rd step");
+
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"done\n", (uintptr_t)5);
-    notify("third step");
     uint64_t comparison_table_base = (uint64_t)kmalloc(131072);
     uint64_t comparison_table = ((comparison_table_base - 1) | 65535) + 1;
     uint8_t* comparison_table_data = mmap(0, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
@@ -1126,7 +1122,6 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
     uint64_t kelf_bases[NCPUS];
     uint64_t kelf_entries[NCPUS];
     uint64_t uelf_cr3s[NCPUS];
-         notify("4th step");
     for(int cpu = 0; cpu < NCPUS; cpu++)
     {
         char buf[] = "loading on cpu ..\n";
@@ -1205,7 +1200,6 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
     }
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"done\npatching shellcore... ", (uintptr_t)27);
     //restore the gdb_stub's SIGTRAP handler
-         notify("5th step");
     struct sigaction sa;
     sigaction(SIGBUS, 0, &sa);
     sigaction(SIGTRAP, &sa, 0);
@@ -1215,10 +1209,9 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
     copyin(IDT+16*9+5, "\x8e", 1);
     copyin(IDT+16*179+5, "\x8e", 1);
 
-         notify("6th step");
     if(!sceKernelIsTestKit())
         patch_shellcore(shellcore_patches, n_shellcore_patches, shellcore_eh_frame_offset);
-           notify("last step");
+
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"done\npatching app.db... ", (uintptr_t)24);
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"done\n", (uintptr_t)5);
 #ifndef DEBUG
