@@ -233,7 +233,7 @@ static int bind_to_some_cpu(int skip)
         affinity[i++] = 0;
 
         notify_alt("step 5 done");
-    return cpuset_setaffinity(3, 1, gettid(), 16, (void*)affinity);
+    return cpuset_setaffinity(3, 2, gettid(), 16, (void*)affinity);
 }
 
 __attribute__((optimize(3)))
