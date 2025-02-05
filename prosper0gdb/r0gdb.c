@@ -985,7 +985,7 @@ static void getpid_to_fncall(uint64_t* regs)
         regs[2] &= -257;
     }
 }
-
+void notify(const char* s);
 uint64_t r0gdb_kfncall(uint64_t fn, ...)
 {
     va_list args;
@@ -994,13 +994,26 @@ uint64_t r0gdb_kfncall(uint64_t fn, ...)
         fncall_args[i] = va_arg(args, uint64_t);
     va_end(args);
     fncall_fn = fn;
+    notify("b4 r0gdb_instrument");
     r0gdb_instrument(0);
+    notify("after r0gdb_instrument");
+
     void(*p_getpid)(void) = WRAPPER(getpid);
+
+    notify("after getpid1");
+
     trace_prog = getpid_to_fncall;
     if(!sys_getpid)
         kmemcpy(&sys_getpid, (void*)(offsets.sysents + 48*SYS_getpid + 8), 8);
+
+    notify("step 4");
+
     set_trace();
+    
+    notify("step 5");
     p_getpid();
+    
+    notify("step 6");
     return fncall_ans;
 }
 
