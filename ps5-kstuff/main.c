@@ -973,15 +973,20 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
 #ifndef FIRMWARE_PORTING
     dbg_enter();
 #endif
+    notify("allocating kernel mem");
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"allocating kernel memory... ", (uintptr_t)28);
+      notify("after remote sys");
     for(int i = 0; i < 0x300; i += 2)
         r0gdb_kmalloc(0x100);
+
+      notify("after kmalloc");
     for(int i = 0; i < 2; i += 2)
     {
         while(!mem_blocks[i])
             mem_blocks[i] = r0gdb_kmalloc(1<<23);
         mem_blocks[i+1] = (mem_blocks[i] ? mem_blocks[i] + (1<<23) : 0);
     }
+      notify("before 3rd step");
     gdb_remote_syscall("write", 3, 0, (uintptr_t)1, (uintptr_t)"done\n", (uintptr_t)5);
     notify("third step");
     uint64_t comparison_table_base = (uint64_t)kmalloc(131072);
