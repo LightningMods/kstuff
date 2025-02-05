@@ -905,6 +905,7 @@ static inline uint64_t rdtsc(void)
     return (uint64_t)edx << 32 | eax;
 }
 
+#include <string.h>
 //without kstuff = 2308259098
 //with kstuff and in-kelf checks = 86633419408 (37.5 times slower)
 //with kstuff and no in-kelf checks = 68129284331 (39.5 times slower)
@@ -978,7 +979,6 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
       notify("after remote sys");
   char buff[50];
     for(int i = 0; i < 0x300; i += 2){
-        memset(buff, 0, sizeof(buff));
         sprint(buff, "allocating for %d", i); 
         notify(buff);
         r0gdb_kmalloc(0x100);
