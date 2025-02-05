@@ -979,7 +979,7 @@ int main(void* ds, int a, int b, uintptr_t c, uintptr_t d)
       notify("after remote sys");
   char buff[50];
     for(int i = 0; i < 0x300; i += 2){
-        sprint(buff, "allocating for %d", i); 
+        sprintf(buff, "allocating for %d", i); 
         notify(buff);
         r0gdb_kmalloc(0x100);
     }
