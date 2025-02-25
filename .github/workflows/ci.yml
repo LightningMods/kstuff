@@ -30,7 +30,7 @@ jobs:
 
     - name: Get Latest SDK Release Info
       id: sdk-release
-      uses: actions/github-script@v6
+      uses: actions/github-script@main
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -54,7 +54,7 @@ jobs:
         bash ci-ps5-kstuff-ldr.sh
 
     - name: Upload Payload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: Payload
         path: ./ps5-kstuff-ldr/kstuff.elf
