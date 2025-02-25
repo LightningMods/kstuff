@@ -50,7 +50,6 @@ jobs:
 
     - name: Build Payload
       run: |
-        export PS5_PAYLOAD_SDK=/opt/ps5-payload-sdk
         bash ci-ps5-kstuff-ldr.sh
 
     - name: Upload Payload
